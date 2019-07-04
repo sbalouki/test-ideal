@@ -1856,11 +1856,32 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      boards: [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+      boards: [[0, 0, 0, 2], [0, 0, 4, 4], [0, 0, 0, 2], [0, 0, 0, 0]],
+      gameTurn: 1
     };
+  },
+  computed: {
+    score: function score() {
+      var score = 0;
+
+      for (var x = 0; x < this.boards.length; x++) {
+        var boardline = this.boards[x];
+
+        for (var y = 0; y < boardline.length; y++) {
+          var square = boardline[y];
+          score += this.boards[x][y];
+        }
+      }
+
+      return score;
+    }
   },
   created: function created() {
     var tokenNumber = 2;
@@ -1883,32 +1904,61 @@ __webpack_require__.r(__webpack_exports__);
         y_pos: Math.floor(Math.random() * 3) + 0
       };
     },
-    slideRIght: function slideRIght() {
+    slideRight: function slideRight() {
       for (var i = 0; i < this.boards.length; i++) {
         var boardline = this.boards[i];
 
         for (var j = boardline.length - 2; j >= 0; j--) {
           var token = boardline[j];
-          var newSquarePosition = this.rightIndexOfNextValue(boardline, j);
+          var newSquarePosition = this.rightIndexOfNextValue(boardline, j, token);
 
-          if (newSquarePosition != j && newSquarePosition < boardline.length) {
+          if (newSquarePosition != j) {
             boardline[j] = 0;
-            boardline[newSquarePosition] = token;
+            if (boardline[newSquarePosition] != 0) boardline[newSquarePosition] = token * token;else boardline[newSquarePosition] = token;
           }
         }
       }
 
+      this.gameTurn += 1;
       this.$forceUpdate();
     },
-    rightIndexOfNextValue: function rightIndexOfNextValue(line, currentIndex) {
+    slideLeft: function slideLeft() {
+      for (var i = 0; i < this.boards.length; i++) {
+        var boardline = this.boards[i];
+
+        for (var j = 0; j < boardline.length; j++) {
+          var token = boardline[j];
+          var newSquarePosition = this.leftIndexOfNextValue(boardline, j, token);
+
+          if (newSquarePosition != j) {
+            boardline[j] = 0;
+            if (boardline[newSquarePosition] != 0) boardline[newSquarePosition] = token * token;else boardline[newSquarePosition] = token;
+          }
+        }
+      }
+
+      this.gameTurn += 1;
+      this.$forceUpdate();
+    },
+    rightIndexOfNextValue: function rightIndexOfNextValue(line, currentIndex, token) {
       var index = currentIndex + 1;
       var stop = false;
 
       while (index < line.length && !stop) {
-        if (line[index] == 0) index++;else stop = true;
+        if (line[index] == 0 || line[index] == token) index++;else stop = true;
       }
 
       return index - 1;
+    },
+    leftIndexOfNextValue: function leftIndexOfNextValue(line, currentIndex, token) {
+      var index = currentIndex - 1;
+      var stop = false;
+
+      while (index >= 0 && !stop) {
+        if (line[index] == 0 || line[index] == token) index--;else stop = true;
+      }
+
+      return index + 1;
     }
   }
 });
@@ -37850,6 +37900,10 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
+    _c("h1", [_vm._v("Tour de jeu " + _vm._s(_vm.gameTurn))]),
+    _vm._v(" "),
+    _c("h2", [_vm._v("Score " + _vm._s(_vm.score))]),
+    _vm._v(" "),
     _c("table", [
       _c(
         "tbody",
@@ -37879,7 +37933,21 @@ var render = function() {
         attrs: { type: "button" },
         on: {
           click: function($event) {
-            return _vm.slideRIght()
+            return _vm.slideLeft()
+          }
+        }
+      },
+      [_vm._v("Gauche")]
+    ),
+    _vm._v(" "),
+    _c(
+      "button",
+      {
+        staticClass: "btn btn-primary btn-lg",
+        attrs: { type: "button" },
+        on: {
+          click: function($event) {
+            return _vm.slideRight()
           }
         }
       },
