@@ -1866,8 +1866,12 @@ __webpack_require__.r(__webpack_exports__);
 //
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
+    var boards = [[4, 4, 4, 4], [0, 0, 0, 0], [0, 2, 2, 2], [0, 0, 0, 0]];
     return {
-      boards: [[4, 4, 4, 4], [0, 0, 0, 0], [0, 2, 2, 2], [0, 0, 0, 0]],
+      boards: boards,
+      nbLines: boards.length,
+      nbCol: boards[0].length,
+      firstLine: boards[0],
       gameTurn: 1
     };
   },
@@ -1889,34 +1893,34 @@ __webpack_require__.r(__webpack_exports__);
   },
   created: function created() {
     var tokenNumber = 2;
-    var authorizedNumbers = [2, 4]; // while (tokenNumber > 0) {
-    //     const square = this.generateRandomSquare();
-    //     if(this.boards[square.x_pos][square.y_pos] == 0)
-    //     {
-    //         const randomValue = authorizedNumbers[Math.floor(Math.random()*authorizedNumbers.length)];
-    //         this.boards[square.x_pos][square.y_pos] = randomValue;
-    //         tokenNumber -= 1;
-    //     }
-    // }
+    var authorizedNumbers = [2, 4];
+
+    while (tokenNumber > 0) {
+      var square = this.generateRandomToken();
+
+      if (this.boards[square.x_pos][square.y_pos] == 0) {
+        var randomValue = authorizedNumbers[Math.floor(Math.random() * authorizedNumbers.length)];
+        this.boards[square.x_pos][square.y_pos] = randomValue;
+        tokenNumber -= 1;
+      }
+    }
   },
   methods: {
-    generateRandomSquare: function generateRandomSquare() {
+    generateRandomToken: function generateRandomToken() {
       return {
         x_pos: Math.floor(Math.random() * 3) + 0,
         y_pos: Math.floor(Math.random() * 3) + 0
       };
     },
     slideRight: function slideRight() {
-      for (var i = 0; i < this.boards.length; i++) {
-        var boardline = this.boards[i];
+      for (var line = 0; line < this.nbLines; line++) {
+        for (var col = this.boards[line].length - 2; col >= 0; col--) {
+          var token = this.boards[line][col];
+          var newSquarePosition = this.getRightPossibleIndex(this.boards[line], col, token);
 
-        for (var j = boardline.length - 2; j >= 0; j--) {
-          var token = boardline[j];
-          var newSquarePosition = this.rightIndexOfNextValue(boardline, j, token);
-
-          if (newSquarePosition != j) {
-            boardline[j] = 0;
-            if (boardline[newSquarePosition] != 0) boardline[newSquarePosition] = token * token;else boardline[newSquarePosition] = token;
+          if (newSquarePosition != col) {
+            this.boards[line][col] = 0;
+            if (this.boards[line][newSquarePosition] != 0) this.boards[line][newSquarePosition] = token * token;else this.boards[line][newSquarePosition] = token;
           }
         }
       }
@@ -1925,16 +1929,14 @@ __webpack_require__.r(__webpack_exports__);
       this.$forceUpdate();
     },
     slideLeft: function slideLeft() {
-      for (var i = 0; i < this.boards.length; i++) {
-        var boardline = this.boards[i];
+      for (var line = 0; line < this.nbLines; line++) {
+        for (var col = 0; col < this.boards[line].length; col++) {
+          var token = this.boards[line][col];
+          var newSquarePosition = this.getLeftPossibleIndex(this.boards[line], col, token);
 
-        for (var j = 0; j < boardline.length; j++) {
-          var token = boardline[j];
-          var newSquarePosition = this.leftIndexOfNextValue(boardline, j, token);
-
-          if (newSquarePosition != j) {
-            boardline[j] = 0;
-            if (boardline[newSquarePosition] != 0) boardline[newSquarePosition] = token * token;else boardline[newSquarePosition] = token;
+          if (newSquarePosition != col) {
+            this.boards[line][col] = 0;
+            if (this.boards[line][newSquarePosition] != 0) this.boards[line][newSquarePosition] = token * token;else this.boards[line][newSquarePosition] = token;
           }
         }
       }
@@ -1942,7 +1944,41 @@ __webpack_require__.r(__webpack_exports__);
       this.gameTurn += 1;
       this.$forceUpdate();
     },
-    rightIndexOfNextValue: function rightIndexOfNextValue(line, currentIndex, token) {
+    slideTop: function slideTop() {
+      var firstLine = this.boards[0];
+
+      for (var col = 0; col < this.nbCol; col++) {
+        for (var line = 0; line < this.nbLines; line++) {
+          var token = this.boards[line][col];
+          var newSquareLine = this.getTopPossibleIndex(this.boards, line, col, token, this.nbLines);
+          this.setTokenPosition(line, col, newSquareLine, token);
+        }
+      }
+
+      this.gameTurn += 1;
+      this.$forceUpdate();
+    },
+    slideBottom: function slideBottom() {
+      var firstLine = this.boards[0];
+
+      for (var col = 0; col < this.nbCol; col++) {
+        for (var line = this.nbLines - 1; line >= 0; line--) {
+          var token = this.boards[line][col];
+          var newSquareLine = this.getBottomPossibleIndex(this.boards, line, col, token, this.nbLines);
+          this.setTokenPosition(line, col, newSquareLine, token);
+        }
+      }
+
+      this.gameTurn += 1;
+      this.$forceUpdate();
+    },
+    setTokenPosition: function setTokenPosition(line, col, newSquareLine, token) {
+      if (newSquareLine != line) {
+        this.boards[line][col] = 0;
+        if (this.boards[newSquareLine][col] != 0) this.boards[newSquareLine][col] = token * token;else this.boards[newSquareLine][col] = token;
+      }
+    },
+    getRightPossibleIndex: function getRightPossibleIndex(line, currentIndex, token) {
       var index = currentIndex + 1;
       var stop = false;
 
@@ -1952,7 +1988,7 @@ __webpack_require__.r(__webpack_exports__);
 
       return index - 1;
     },
-    leftIndexOfNextValue: function leftIndexOfNextValue(line, currentIndex, token) {
+    getLeftPossibleIndex: function getLeftPossibleIndex(line, currentIndex, token) {
       var index = currentIndex - 1;
       var stop = false;
 
@@ -1962,47 +1998,7 @@ __webpack_require__.r(__webpack_exports__);
 
       return index + 1;
     },
-    slideTop: function slideTop() {
-      var firstLine = this.boards[0];
-      var nbColumn = firstLine.length;
-      var sizeColumn = this.boards.length;
-
-      for (var col = 0; col < nbColumn; col++) {
-        for (var line = 0; line < sizeColumn; line++) {
-          var token = this.boards[line][col];
-          var newSquareLine = this.lineNextIndexTop(this.boards, line, col, token, sizeColumn);
-
-          if (newSquareLine != line) {
-            this.boards[line][col] = 0;
-            if (this.boards[newSquareLine][col] != 0) this.boards[newSquareLine][col] = token * token;else this.boards[newSquareLine][col] = token;
-          }
-        }
-      }
-
-      this.gameTurn += 1;
-      this.$forceUpdate();
-    },
-    slideBottom: function slideBottom() {
-      var firstLine = this.boards[0];
-      var nbColumn = firstLine.length;
-      var sizeColumn = this.boards.length;
-
-      for (var col = 0; col < nbColumn; col++) {
-        for (var line = sizeColumn - 1; line >= 0; line--) {
-          var token = this.boards[line][col];
-          var newSquareLine = this.lineNextIndexBottom(this.boards, line, col, token, sizeColumn);
-
-          if (newSquareLine != line) {
-            this.boards[line][col] = 0;
-            if (this.boards[newSquareLine][col] != 0) this.boards[newSquareLine][col] = token * token;else this.boards[newSquareLine][col] = token;
-          }
-        }
-      }
-
-      this.gameTurn += 1;
-      this.$forceUpdate();
-    },
-    lineNextIndexBottom: function lineNextIndexBottom(boards, line, col, token, sizeColumn) {
+    getBottomPossibleIndex: function getBottomPossibleIndex(boards, line, col, token, sizeColumn) {
       var lineIndex = line + 1;
       var stop = false;
 
@@ -2012,7 +2008,7 @@ __webpack_require__.r(__webpack_exports__);
 
       return lineIndex - 1;
     },
-    lineNextIndexTop: function lineNextIndexTop(boards, line, col, token, sizeColumn) {
+    getTopPossibleIndex: function getTopPossibleIndex(boards, line, col, token, sizeColumn) {
       var lineIndex = line - 1;
       var stop = false;
 
