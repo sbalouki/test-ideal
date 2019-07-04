@@ -1860,10 +1860,14 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      boards: [[0, 0, 0, 2], [0, 0, 4, 4], [0, 0, 0, 2], [0, 0, 0, 0]],
+      boards: [[4, 4, 4, 4], [0, 0, 0, 0], [0, 2, 2, 2], [0, 0, 0, 0]],
       gameTurn: 1
     };
   },
@@ -1885,17 +1889,15 @@ __webpack_require__.r(__webpack_exports__);
   },
   created: function created() {
     var tokenNumber = 2;
-    var authorizedNumbers = [2, 4];
-
-    while (tokenNumber > 0) {
-      var square = this.generateRandomSquare();
-
-      if (this.boards[square.x_pos][square.y_pos] == 0) {
-        var randomValue = authorizedNumbers[Math.floor(Math.random() * authorizedNumbers.length)];
-        this.boards[square.x_pos][square.y_pos] = randomValue;
-        tokenNumber -= 1;
-      }
-    }
+    var authorizedNumbers = [2, 4]; // while (tokenNumber > 0) {
+    //     const square = this.generateRandomSquare();
+    //     if(this.boards[square.x_pos][square.y_pos] == 0)
+    //     {
+    //         const randomValue = authorizedNumbers[Math.floor(Math.random()*authorizedNumbers.length)];
+    //         this.boards[square.x_pos][square.y_pos] = randomValue;
+    //         tokenNumber -= 1;
+    //     }
+    // }
   },
   methods: {
     generateRandomSquare: function generateRandomSquare() {
@@ -1959,6 +1961,66 @@ __webpack_require__.r(__webpack_exports__);
       }
 
       return index + 1;
+    },
+    slideTop: function slideTop() {
+      var firstLine = this.boards[0];
+      var nbColumn = firstLine.length;
+      var sizeColumn = this.boards.length;
+
+      for (var col = 0; col < nbColumn; col++) {
+        for (var line = 0; line < sizeColumn; line++) {
+          var token = this.boards[line][col];
+          var newSquareLine = this.lineNextIndexTop(this.boards, line, col, token, sizeColumn);
+
+          if (newSquareLine != line) {
+            this.boards[line][col] = 0;
+            if (this.boards[newSquareLine][col] != 0) this.boards[newSquareLine][col] = token * token;else this.boards[newSquareLine][col] = token;
+          }
+        }
+      }
+
+      this.gameTurn += 1;
+      this.$forceUpdate();
+    },
+    slideBottom: function slideBottom() {
+      var firstLine = this.boards[0];
+      var nbColumn = firstLine.length;
+      var sizeColumn = this.boards.length;
+
+      for (var col = 0; col < nbColumn; col++) {
+        for (var line = sizeColumn - 1; line >= 0; line--) {
+          var token = this.boards[line][col];
+          var newSquareLine = this.lineNextIndexBottom(this.boards, line, col, token, sizeColumn);
+
+          if (newSquareLine != line) {
+            this.boards[line][col] = 0;
+            if (this.boards[newSquareLine][col] != 0) this.boards[newSquareLine][col] = token * token;else this.boards[newSquareLine][col] = token;
+          }
+        }
+      }
+
+      this.gameTurn += 1;
+      this.$forceUpdate();
+    },
+    lineNextIndexBottom: function lineNextIndexBottom(boards, line, col, token, sizeColumn) {
+      var lineIndex = line + 1;
+      var stop = false;
+
+      while (lineIndex < sizeColumn && !stop) {
+        if (boards[lineIndex][col] == 0 || boards[lineIndex][col] == token) lineIndex++;else stop = true;
+      }
+
+      return lineIndex - 1;
+    },
+    lineNextIndexTop: function lineNextIndexTop(boards, line, col, token, sizeColumn) {
+      var lineIndex = line - 1;
+      var stop = false;
+
+      while (lineIndex >= 0 && !stop) {
+        if (boards[lineIndex][col] == 0 || boards[lineIndex][col] == token) lineIndex--;else stop = true;
+      }
+
+      return lineIndex + 1;
     }
   }
 });
@@ -37952,6 +38014,34 @@ var render = function() {
         }
       },
       [_vm._v("Droite")]
+    ),
+    _vm._v(" "),
+    _c(
+      "button",
+      {
+        staticClass: "btn btn-primary btn-lg",
+        attrs: { type: "button" },
+        on: {
+          click: function($event) {
+            return _vm.slideTop()
+          }
+        }
+      },
+      [_vm._v("Haut")]
+    ),
+    _vm._v(" "),
+    _c(
+      "button",
+      {
+        staticClass: "btn btn-primary btn-lg",
+        attrs: { type: "button" },
+        on: {
+          click: function($event) {
+            return _vm.slideBottom()
+          }
+        }
+      },
+      [_vm._v("Bas")]
     )
   ])
 }

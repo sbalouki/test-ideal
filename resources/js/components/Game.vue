@@ -17,6 +17,10 @@
                 class="btn btn-primary btn-lg" @click="slideLeft()">Gauche</button>
         <button type="button" 
                 class="btn btn-primary btn-lg" @click="slideRight()">Droite</button>
+        <button type="button" 
+                class="btn btn-primary btn-lg" @click="slideTop()">Haut</button>
+        <button type="button" 
+                class="btn btn-primary btn-lg" @click="slideBottom()">Bas</button>
     </div>
 </template>
 
@@ -25,9 +29,9 @@
         data(){
             return {
                 boards: [
-                    [0, 0, 0, 2],
-                    [0, 0, 4, 4],
-                    [0, 0, 0, 2],
+                    [4, 4, 4, 4],
+                    [0, 0, 0, 0],
+                    [0, 2, 2, 2],
                     [0, 0, 0, 0],
                 ],
                 gameTurn: 1
@@ -49,15 +53,15 @@
         created(){
             let tokenNumber = 2;
             const authorizedNumbers = [2, 4];
-            while (tokenNumber > 0) {
-                const square = this.generateRandomSquare();
-                if(this.boards[square.x_pos][square.y_pos] == 0)
-                {
-                    const randomValue = authorizedNumbers[Math.floor(Math.random()*authorizedNumbers.length)];
-                    this.boards[square.x_pos][square.y_pos] = randomValue;
-                    tokenNumber -= 1;
-                }
-            }
+            // while (tokenNumber > 0) {
+            //     const square = this.generateRandomSquare();
+            //     if(this.boards[square.x_pos][square.y_pos] == 0)
+            //     {
+            //         const randomValue = authorizedNumbers[Math.floor(Math.random()*authorizedNumbers.length)];
+            //         this.boards[square.x_pos][square.y_pos] = randomValue;
+            //         tokenNumber -= 1;
+            //     }
+            // }
         },
         methods : {
             generateRandomSquare(){
@@ -116,7 +120,7 @@
                 return index - 1;
             },
             leftIndexOfNextValue(line, currentIndex, token){
-                let index = currentIndex -1;
+                let index = currentIndex - 1;
                 let stop = false;
                 while (index >= 0 && !stop) {
                     if(line[index] == 0 || line[index] == token)
@@ -125,6 +129,73 @@
                         stop = true;
                 }
                 return index + 1;
+            },
+            slideTop(){
+                const firstLine = this.boards[0];
+                const nbColumn = firstLine.length;
+                const sizeColumn = this.boards.length;
+
+                for (let col = 0; col < nbColumn; col++) {
+                    for(let line = 0; line < sizeColumn; line++) {
+                        const token = this.boards[line][col];
+                        const newSquareLine = this.lineNextIndexTop(this.boards, line, col, token, sizeColumn);
+                        if(newSquareLine != line)
+                        {
+                            this.boards[line][col] = 0;
+                            if(this.boards[newSquareLine][col] != 0)
+                                this.boards[newSquareLine][col] = token * token;
+                            else
+                                this.boards[newSquareLine][col] = token;
+                        }
+                    }
+                }
+                this.gameTurn += 1;
+                this.$forceUpdate();
+            },
+            slideBottom(){
+                const firstLine = this.boards[0];
+                const nbColumn = firstLine.length;
+                const sizeColumn = this.boards.length;
+
+
+                for (let col = 0; col < nbColumn; col++) {
+                    for(let line = sizeColumn - 1; line >= 0; line--) {
+                        const token = this.boards[line][col];
+                        const newSquareLine = this.lineNextIndexBottom(this.boards, line, col, token, sizeColumn);
+                        if(newSquareLine != line)
+                        {
+                            this.boards[line][col] = 0;
+                            if(this.boards[newSquareLine][col] != 0)
+                                this.boards[newSquareLine][col] = token * token;
+                            else
+                                this.boards[newSquareLine][col] = token;
+                        }
+                    }
+                }
+                this.gameTurn += 1;
+                this.$forceUpdate();
+            },
+            lineNextIndexBottom(boards, line, col, token, sizeColumn){
+                let lineIndex = line + 1;
+                let stop = false;
+                while (lineIndex < sizeColumn && !stop) {
+                    if(boards[lineIndex][col] == 0 || boards[lineIndex][col]==token)
+                        lineIndex++;
+                    else
+                        stop = true;
+                }
+                return lineIndex - 1;
+            },
+            lineNextIndexTop(boards, line, col, token, sizeColumn){
+                let lineIndex = line - 1;
+                let stop = false;
+                while (lineIndex >= 0 && !stop) {
+                    if(boards[lineIndex][col] == 0 || boards[lineIndex][col]==token)
+                        lineIndex--;
+                    else
+                        stop = true;
+                }
+                return lineIndex + 1;
             }
         }
     }
